@@ -110,11 +110,103 @@ The two items that you'll need here are the "Consumer Key" and the "Consumer Sec
 
 Don't worry about copying these items anywhere; they'll be available here when you need them.  
 
-Bizarrely, to access these details again you have to go to ```Setup (cog icon, top right) -> Home -> Apps -> App Manager -> drop down by your app -> view``` going to ```Setup (cog icon, top right) -> Home -> Apps -> Connected Apps -> Manage connected apps``` takes you to a different page that doesn't show the connection details!
+Bizarrely, to access these details again you have to go to ```Setup (cog icon, top right) -> Home -> Apps -> App Manager -> drop down by your app -> view```.  Going to ```Setup (cog icon, top right) -> Home -> Apps -> Connected Apps -> Manage connected apps``` takes you to a different page that doesn't show the connection details!
 
-#### OAUTH grant types
-OAuth2 was designed specifically to enable the client to get an access token without the client ever seeing the user's username and password.
+#### Authenticating to Salesforce with the Password grant type
+
+Next, we'll use the OAUth2 password flow to connect to Salesforce. Please note that this is fine for fooling around in scripts like we're doing here, but it's categorically not okay for product use via third-party applications. Please see [the section below on OAuth Grant Types](OAUTH grant types) for details about why.
+
+I'm going to do this using curl, simply because it shows exactly the HTTP interactions involved and because it means not having to get involved in language and library differences.
+
+First, we need to call the Salesforce instance's authentication endpoint using a POST, passing:
+* **A grant_type of "password"**, to specify the OAuth2 flow we want to use
+* **our client_id and client_secret** (in Salesforce, the  consumer ID and consumer secret) - to identify our connected app
+* **The user's username and password** - to authenticate the user 
+
+So:
+
+```
+curl -X POST -d 'grant_type=password&client_id=your_consumer_id&client_secret=your_consumer_secret&username=your_uname&password=passwd'
+https://login.salesforce.com/services/oauth2/token
+```
+
+This (assuming you've done it right!) will give you an uglier version of the following.  I've pretty-printed it to make it legible.  If you want to do the same, pipe the output of curl through something like `json_pp`.
+
+```
+{
+    "access_token": "a_long_string_of_odd_characters",
+    "instance_url": "https://angry-rodent-r4psqn-dev-ed.my.salesforce.com",
+    "id": "https://login.salesforce.com/id/more_chars/odd_chars",
+    "token_type": "Bearer",
+    "issued_at": "1554670862917",
+    "signature": "2zZDrh3PlPht6gl4JHyywsq2Fgf8Bvet75BlefkhLmQ="
+}
+```
+
+The `access_token` field is the one you want.  If you include that in subsequent API calls as the access token, all will be well - see the next sections!
 
 ### Querying for metadata
 
+Right, we're ready to rumble!  Access key in hand, we can query an API for something interesting.  We have to add an HTTP header called `Authorization`, with a value of `Bearer {your-access-token}`:
+
+```
+curl -H "Authorization: Bearer {your-access-token}" https://{your-instance}.my.salesforce.com/services/data/v45.0/sobjects/
+```
+
+If you run this then you will probably get back an extraordinary amount of text - the "services/data/v45.0/sobjects/" sends you a dump of the whole data model from your saleforce instance, all 150kb of it!  It's interesting for a browse around, and it includes a bunch of relative URLs that you can prepend your Salesforce instance name to and call.  This lets you drill in to the specifics of some of the data types.
+
 ### Querying for data
+
+Finally, let's try an API call to retrieve some actual data - how about a list of all Accounts objects in your instance?  This endpoint uses Salesforce's SOQL language to retrieve the names of all the Account objects (which represent sales accounts) in your instance.
+
+```
+curl -H 'Authorization: Bearer {your_access_token}' https://curious-shark-r4psqn-dev-ed.my.salesforce.com/services/data/v20.0/query/?q=SELECT+name+from+Account
+```
+You'll see that each of the returned Account JSON blocks includes a URL that can use to query the whole object for more experimentation.
+
+## Summary
+
+In this post we've covered a lot of ground very quickly! I hope I kept it to the point. The simple points to remember are:
+
+1. Salesforce is based on a relational-style object model, and you can query the data and metadata of the whole object model through some pretty intuitive REST APIs
+1. You can create test instances of Salesforce at will to mess around with, either by creating a developer edition account or by spinning up playgrounds
+1. Before calling Salesforce APIs you have to register a connected app to get the consumer ID and consumer secret.
+1. You can authenticate to your instance of Salesforce using any of a number of OAuth2 flows; `password` is simple but dangerous! Use `authorization_code` instead (see below).
+1. After authenticating, include the access code in the Authorization header on subsequent API calls.
+
+I plan to write some actual Java code to create a web app that does this stuff properly, rather than just cobbled together through `curl` calls. That code will be in this repo, so check back soon!
+
+## Appendix: OAUTH grant types
+
+We used basic username and password authentication to get an access key from Salesforce, above.  This is a bad idea in general, but this post has enough in it without opening that particular can of worms! 
+
+However, as an appendix (because it's really important) I've included this section to talk about what we should have done instead.
+
+As Oauth2 is a protocol, it's defined in terms of how the interactions between the client and the server need to proceed - who says what and supplies what, in what order.  OAuth2 has several different "flows", depending on the kind of client (remember that's the client *system*!) that's authentication.  Each flow is subtly different from the other flows. You specify the flow you're using as part of the initial authentication call by specifying the "grant_type" parameter
+
+The flows that we care about here are as follows:
+
+### Resource Owner Password Credentials flow
+
+The **password flow** (```grant_type=password```) enables an application to directly pass a username and password to Salesforce, and receive an access code in return. This access code can be used to access Salesforce in subsequent API calls.  This is what we did above.
+
+This approach is very hazardous!
+* The client software has full visibility of the user's username and password.
+* The client software has full visibility of the user's access token.
+
+This flow is only applicable for first-party applications - applications written and maintained by the user, the user's company or by Salesforce themselves.  The other OAuth2 flows are all designed to enable users to log in and get access tokens without the client system ever seeing the username and password.
+
+### Authorization code flow
+
+The **Web server flow** (```grant_type=authorization_code```) enables a user to use their Salesforce username and password to give a third-party web server the ability to access Salesforce data on their behalf.
+
+For example, imagine we write a cool analytics package that can pull data out of Salesforce and magically predict which deals are likely to close in the next week. Our user would need to enter their Salesforce username and password to enable our app (embodied by our web server, which is being used by our user) to access the user's Salesforce data.
+
+OAuth2 was designed specifically to enable our webserver to get an access token without us ever seeing the user's username and password.  The way this happens is:
+
+1. We forward the user to the Salesforce login page for our Salesforce instance. As part of the forward, we include our consumer ID and consumer secret to prove to Salesforce that we're a legit third party app.  We also supply a URL that Salesforce will forward our user to when they've successfully logged in.
+1. The user logs in to Salesforce with their username and password.  Salesforce generates an authorisation code (note - NOT an access code!), and then forwards the user back to us at the URL we supplied.
+1. Our web server receives the authorisation code and makes a server-to-server call to Salesforce to convert the authorisation code into an access code. This call includes a nonce- and hash-based mechanism to prove to Salesforce that we're the same party that asked for the authorization code in the first place; this prevents a party that intercepts the authorization code from converting it into an access code.
+1. Salesforce generates the access code and returns it.  We store this access code in the session data for our user, but we never share it with the user! We only send it to Salesforce when we make API calls.
+
+The advantage of this approach is that the access code (which is highly sensitive) never actually goes to the client's device. This is the flow that we should use in our app!
