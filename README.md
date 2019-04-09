@@ -24,7 +24,7 @@ salesƒorce is a very large company by anybody's standards.  According to [Owler
 This isn't an obvious conclusion to draw if you look at the breadth of their product set, but if you map the major Salesforce products onto the customer lifecycle then it makes a lot of sense:
 ![Salesforce products vs. product lifecycle](https://docs.google.com/drawings/d/e/2PACX-1vQ0DIkP0FPIZGw-82-igAeiaKb4ZdP3o22mZ-kAfhPq0tPYeqmYvKY9p72NLp_Pokt6qP-8P5HdFRXa/pub?w=971&h=545)
 * Sales Cloud **manages sales leads**, right from the first contact through to a closed deal.  It also *provides analytics* for forecasting sales, and performance managing the sales process and team.
-* Service Cloud **manages the immediate needs of customers**, from connecting them with each other for mutual assistnace through to getting support tickets opened and managed through to closure. It also manages an in-the-field support force (with scheduling and work-order management), as well as automated monitoring of customer health for early prediction of when service might be needed.
+* Service Cloud **manages the immediate needs of customers**, from connecting them with each other for mutual assistance through to getting support tickets opened and managed through to closure. It also manages an in-the-field support force (with scheduling and work-order management), as well as automated monitoring of customer health for early prediction of when service might be needed.
 * Marketing cloud is a **multi-channel marketing product suite that enables communication to all customers no matter where they are on the customer lifecycle**.  This enables campaigns for
     * Demand and lead generation
     * Lead conversion
@@ -32,17 +32,17 @@ This isn't an obvious conclusion to draw if you look at the breadth of their pro
     * Ongoing customer engagement targeted to customers who may be a retention risk
     * Automated, low-cost communication to keep customers with in-flight service tickets informed and close
 
-These three major products tell a tight, holistic story of customer management; of course, the picture isn't quite this clean - Salesforce has other products in addition to these, and these products tend to be used for much more than their CRM use cases! In broad strokes, though, it's a great picture.
+These three major products tell a tight, holistic story of customer management; of course, the picture isn't quite this clean - Salesforce has other products in addition to these, and the flagship products tend to be used for much more than their CRM use cases! In broad strokes, though, it's a great picture.
 
 ## salesƒorce's core platform
 
-The core salesƒorce platform comprises two major classes of thing, which together form the basis of salesƒorce's application portfolio:
+Sales Cloud, Service Cloud and a lot of the smaller products are built on Salesforce's core platform. This core platform comprises two major classes of thing:
 1. The **data model** defines the business domain of the application, which objects are in the domain and how they relate to each other. For example, the [Sales domain](https://developer.salesforce.com/docs/atlas.en-us.api.meta/api/sforce_api_erd_majors.htm) comprises objects such as Accounts, each of which have several Opportunities.  Each Opportunity can be in one several OpportunityStages, and have a number of known OpportunityCompetitors.
-1. **Logic** operates on the objects in the data model to automate processes. Application behaviour can be triggered by user action, external events or by changes to objects.
+1. **Logic** (application behaviour) operates on the objects in the data model to automate processes. Application behaviour can be triggered by user action, external events or by changes to objects. Application behaviour is specified using a combination of declarative, clickable development and actual code (using Salesforce's proprietary Apex programming language).
 
-On top of these two principal parts, there are other layers of technology to make the system more useable:
+On top of these two principal parts, there are other layers of technology which make the system more useable:
 * An MVC framework to decouple the UI from the underlying data and logic; this enables good UX on multiple platforms
-* Declarative vs. code-based logic; a hybrid clickable/codeable approach miimises the cost of development and maintenance
+* Declarative vs. code-based logic; the hybrid clickable/codeable approach miimises the cost of development and maintenance
 * A detailed set of APIs that allow customers to tightly integrate the platform into home-grown apps; more on this shortly!
 * Technology frameworks allowing Salesforce customers to use their apps (including customisations) over mobile platforms
 * A Salesforce appstore to enable third-party vendors to write and sell their own third-party apps
@@ -52,7 +52,7 @@ The above layers of technology form the basis of most of Salesforce's applicatio
 
 ## Integrating with salesƒorce's APIs
 
-Right, let's get on to the interesting bit! 
+Right, let's get on to the interesting bit! When I started looking at Salesforce in depth, it seemed like it would be an interesting exercise to dig around in the core data model using APIs.
 
 Historially, salesƒorce has had most of their APIs available over horrible old SOAP, and they all still exist in that form.  However, a recent development has been salesƒorce Lightning, which as far as I can tell was a rewrite of the UI platform. In addition to a new UI approach, though, it also brought a suite of [REST APIs](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_rest_resources.htm) which are far more friendly than SOAP.
 
@@ -66,7 +66,7 @@ There are two ways to get an instance of your own to play with.  The first is to
 
 A better way, though, is through [Trailhead](https://trailhead.salesforce.com). Trailhead is salesƒorce's e-learning site, and it's rammed with free, high-quality, gamified learning materials to get you started with working in salesƒorce. 
 
-Many of the Trailhead exercises require access to a reasonably well set-up salesƒorce instance, and so salesƒorce has built a "playground" set of infrastructure into Trailhead that can rapidly and cheaply spin up such salesƒorce instances for use in experimentation and training. These "playgrounds" come ready configured with a set of default accounts, and even a set of default test data to make them a bit interesting.
+Many of the Trailhead exercises require access to a reasonably well set up salesƒorce instance, and so salesƒorce has built a "playground" set of infrastructure into Trailhead that can rapidly and cheaply spin up such salesƒorce instances for use in experimentation and training. These "playgrounds" come ready configured with a set of default accounts, and even a set of default test data to make them a bit interesting.
 
 When you've created a Trailhead account and logged in to it, Trailhead will have created you a playground. Go to your [hands-on orgs management page](https://trailhead.salesforce.com/users/profiles/orgs), and you'll see your playground listed there.  You can just click through to the playground instance and it'll log you straight in - you don't need a password if you click through from Trailhead.
 
@@ -76,7 +76,7 @@ Note that to call any of the APIs on your instance you will actually need your p
 
 The documentation for core platform REST APIs are available [here](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_what_is_rest_api.htm), and there are also a number of Trailhead trails with good materials.
 
-An interesting starting point to experiment with is the `services/data` API. To call it, you can use `https://{your-instance-name}.lightning.force.com/services/data/` without authentication.
+An interesting starting point to experiment with is the `services/data` API. To call it, you can use `https://{your-instance-name}.lightning.force.com/services/data/` without authentication.  You can get an XML or JSON version of it by using an `Accept` http header.
 
 It will return you a list of the available API versions with each one's root endpoint; to start calling those endpoints you'll need an authenticated HTTP session.  Let's have a look at doing that!
 
@@ -84,7 +84,7 @@ It will return you a list of the available API versions with each one's root end
 
 The Salesforce documentation includes a [really detailed treatment of this topic](https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/intro_understanding_authentication.htm).  We'll go through the skinny version here, though.
 
-Before you can call the APIs, you have to have authenticated HTML session with your Salesforce instance. Salesforce supports both SAML and OAUTH2; I used OAUTH2 for reasons of simplicity and because I'm not crazy.
+Before you can call the APIs, you have to have an authenticated HTML session with your Salesforce instance.  I believe this can be done with SAML or Oauth2, but I didn't explore the SAML route at all.
 
 A full treatment of OAUTH2 is clearly outside the scope of this post, but we can cover the minimum bits we need!
 
@@ -182,19 +182,19 @@ We used basic username and password authentication to get an access key from Sal
 
 However, as an appendix (because it's really important) I've included this section to talk about what we should have done instead.
 
-As Oauth2 is a protocol, it's defined in terms of how the interactions between the client and the server need to proceed - who says what and supplies what, in what order.  OAuth2 has several different "flows", depending on the kind of client (remember that's the client *system*!) that's authentication.  Each flow is subtly different from the other flows. You specify the flow you're using as part of the initial authentication call by specifying the "grant_type" parameter
+As Oauth2 is a protocol, it's defined in terms of how the interactions between the client and the server need to proceed - who says what and supplies what, in what order.  OAuth2 has several different "flows", depending on the kind of client (remember that's the client *system*!) that's authenticating.  Each flow is subtly different from the other flows. You specify the flow you're using as part of the initial authentication call by specifying the "grant_type" parameter
 
 The flows that we care about here are as follows:
 
 ### Resource Owner Password Credentials flow
 
-The **password flow** (```grant_type=password```) enables an application to directly pass a username and password to Salesforce, and receive an access code in return. This access code can be used to access Salesforce in subsequent API calls.  This is what we did above.
+Also known as the **password flow** (```grant_type=password```), this enables an application to directly pass a username and password to Salesforce and receive an access code in return. This access code can be used to access Salesforce in subsequent API calls.  This is what we did above.
 
 This approach is very hazardous!
 * The client software has full visibility of the user's username and password.
 * The client software has full visibility of the user's access token.
 
-This flow is only applicable for first-party applications - applications written and maintained by the user, the user's company or by Salesforce themselves.  The other OAuth2 flows are all designed to enable users to log in and get access tokens without the client system ever seeing the username and password.
+This flow is only applicable for first-party applications - applications written and maintained by the user, the user's company or by Salesforce themselves.  The other OAuth2 flows are all designed to enable users to log in and get access tokens without the client system ever seeing the username and password, or even the access code.
 
 ### Authorization code flow
 
@@ -205,8 +205,8 @@ For example, imagine we write a cool analytics package that can pull data out of
 OAuth2 was designed specifically to enable our webserver to get an access token without us ever seeing the user's username and password.  The way this happens is:
 
 1. We forward the user to the Salesforce login page for our Salesforce instance. As part of the forward, we include our consumer ID and consumer secret to prove to Salesforce that we're a legit third party app.  We also supply a URL that Salesforce will forward our user to when they've successfully logged in.
-1. The user logs in to Salesforce with their username and password.  Salesforce generates an authorisation code (note - NOT an access code!), and then forwards the user back to us at the URL we supplied.
-1. Our web server receives the authorisation code and makes a server-to-server call to Salesforce to convert the authorisation code into an access code. This call includes a nonce- and hash-based mechanism to prove to Salesforce that we're the same party that asked for the authorization code in the first place; this prevents a party that intercepts the authorization code from converting it into an access code.
-1. Salesforce generates the access code and returns it.  We store this access code in the session data for our user, but we never share it with the user! We only send it to Salesforce when we make API calls.
+1. The user logs in to Salesforce with their username and password.  Salesforce generates an authorisation code (note - NOT an access code!), and then forwards the user back to us at the URL we supplied (with the authorization code).
+1. Our web server receives the authorisation code and makes a server-to-server call to Salesforce to convert the authorization code into an access code. This call includes a nonce- and hash-based mechanism to prove to Salesforce that we're the same party that asked for the authorization code in the first place; this prevents an attacker that intercepts the authorization code from converting it into an access code.
+1. Salesforce generates the access code and returns it to our web server.  We store this access code in the server-side session data for our user, but we never share it with the user! We only send it to Salesforce when we make API calls.
 
-The advantage of this approach is that the access code (which is highly sensitive) never actually goes to the client's device. This is the flow that we should use in our app!
+The advantages of this approach are that the username and password are only ever seen by the user and by Salefore, and th access code (which is highly sensitive) never actually goes to the client's device. This is the flow that we should use in our app!
