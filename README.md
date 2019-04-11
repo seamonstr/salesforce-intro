@@ -92,11 +92,11 @@ OAUTH2 is a protocol that allows a _client_ (ie. a piece of software) to get hol
 
 #### Adding a new Connected App
 
-OAuth2 includes the concept of a client (remember that's the client system, not the user) pre-registering with the service before it can ask for access tokens. This way the service can trust that the client is at least semi-legit because some sort of pre-vetting process has taken place.
+OAuth2 includes the concept of a client (remember that's the client software - our app.  It's not the user) being pre-registered with the service before it can ask for access tokens. This way the service (Salesforce) can trust that the client (our app) is at least semi-legit because some sort of pre-vetting process has taken place.
 
-To pre-register your client with your Salesforce instance, go to ```Setup (cog icon, top right) -> Home -> Apps -> App Manager```.  This will list all of the apps registered to your instance.  You want to add a new one of type "connected", which means that it will be connecting via APIs.  Click "New connected app", top right.
+To pre-register a client app with your Salesforce instance, go to ```Setup (cog icon, top right) -> Home -> Apps -> App Manager```.  This will list all of the apps already registered to your instance.  You want to add a new one of type "connected", which means that your app will be connecting via APIs. Click "New connected app", top right.
 
-There's very little to set up here.  Create a name (whatever you choose) in the "Connected app name"; when you tab out of that field the system will add a sanitised version of it into the "API Name" field for you.
+There's very little to set up in the resulting page.  Create a name (whatever you choose) in the "Connected app name"; when you tab out of that field the system will add a sanitised version of it into the "API Name" field for you.
 
 Further down, check the "Enable OAUTH Settings" box.  In the fields that open out, you'll have to supply
 * **A callback URL:** this is for more complicated OAUTH2 flows than we'll use here; you can just put a placeholder URL, but make sure it's "https"!  This is a requirement.
@@ -114,7 +114,7 @@ Bizarrely, to access these details again you have to go to ```Setup (cog icon, t
 
 #### Authenticating to Salesforce with the Password grant type
 
-Next, we'll use the OAUth2 password flow to connect to Salesforce. Please note that this is fine for fooling around in scripts like we're doing here, but it's categorically not okay for product use via third-party applications. Please see [the section below on OAuth Grant Types](OAUTH grant types) for details about why.
+Next, we'll use the OAUth2 password flow to connect to Salesforce. Please note that this is fine for fooling around in scripts like we're doing here, but it's categorically not okay for product use via third-party applications. Please see the section below on OAuth Grant Types for details about why.
 
 I'm going to do this using curl, simply because it shows exactly the HTTP interactions involved and because it means not having to get involved in language and library differences.
 
@@ -204,9 +204,11 @@ For example, imagine we write a cool analytics package that can pull data out of
 
 OAuth2 was designed specifically to enable our webserver to get an access token without us ever seeing the user's username and password.  The way this happens is:
 
-1. We forward the user to the Salesforce login page for our Salesforce instance. As part of the forward, we include our consumer ID and consumer secret to prove to Salesforce that we're a legit third party app.  We also supply a URL that Salesforce will forward our user to when they've successfully logged in.
+1. We forward the user to the Salesforce login page for our Salesforce instance. We supply a URL that Salesforce will forward our user to when they've successfully logged in.
 1. The user logs in to Salesforce with their username and password.  Salesforce generates an authorisation code (note - NOT an access code!), and then forwards the user back to us at the URL we supplied (with the authorization code).
-1. Our web server receives the authorisation code and makes a server-to-server call to Salesforce to convert the authorization code into an access code. This call includes a nonce- and hash-based mechanism to prove to Salesforce that we're the same party that asked for the authorization code in the first place; this prevents an attacker that intercepts the authorization code from converting it into an access code.
+1. Our web server receives the authorisation code and makes a server-to-server call to Salesforce to convert the authorization code into an access code. This call includes:
+    * Our consumer ID and consumer secret to prove to Salesforce that we're who we say we are.
+    * A nonce- and hash-based mechanism to prove to Salesforce that we're the same party that asked for the authorization code in the first place; this prevents an attacker that intercepts the authorization code from converting it into an access code.
 1. Salesforce generates the access code and returns it to our web server.  We store this access code in the server-side session data for our user, but we never share it with the user! We only send it to Salesforce when we make API calls.
 
 The advantages of this approach are that the username and password are only ever seen by the user and by Salefore, and th access code (which is highly sensitive) never actually goes to the client's device. This is the flow that we should use in our app!
