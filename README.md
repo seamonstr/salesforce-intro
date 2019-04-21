@@ -20,7 +20,7 @@ In that spirit, I'll cover:
 
 If you check out this repo and build it, it'll give you a silly web app that you can use to authenticate to your Salesforce instance, and then run some Salesforce APIs to look at the data model.
 
-It uses the OAUTH2 authorization_code flow [(see the appendix, below)](OAUTH-Appendix) to authenticate, which is the correct way to do a server-to-server integration.
+It uses the OAUTH2 authorization_code flow [(see the appendix, below)](#OAUTH-Appendix) to authenticate, which is the correct way to do a server-to-server integration.
 
 Before this will work for you, you'll have to change the following:
 1. `src/main/resources/application.yml`: the top section configures the server to use a self-signed certificate in a PKCS12 key store, and that key store is actually checked in to the repo.  This makes it really convenient to use the app, but an attacker could intercept your traffic - you'd need to generate your own, properly signed certificate.
@@ -189,7 +189,7 @@ In this post we've covered a lot of ground very quickly! I hope I kept it to the
 
 I plan to write some actual Java code to create a web app that does this stuff properly, rather than just cobbled together through `curl` calls. That code will be in this repo, so check back soon!
 
-## <a name="OAUTH-Appendix"/>Appendix: OAUTH grant types
+## <a name="OAUTH-Appendix"></a>Appendix: OAUTH grant types
 
 We used basic username and password authentication to get an access key from Salesforce, above.  This is a bad idea in general, but this post has enough in it without opening that particular can of worms! 
 
