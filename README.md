@@ -16,6 +16,19 @@ In that spirit, I'll cover:
     * Querying for metadata
     * Querying for data
 
+## This Repo
+
+If you check out this repo and build it, it'll give you a silly web app that you can use to authenticate to your Salesforce instance, and then run some Salesforce APIs to look at the data model.
+
+It uses the OAUTH2 authorization_code flow (see the appendix, below) to authenticate, which is the correct way to do a server-to-server integration.
+
+Before this will work for you, you'll have to change the following:
+1. `src/main/resources/application.yml`: the top section configures the server to use a self-signed certificate in a PKCS12 key store, and that key store is actually checked in to the repo.  This makes it really convenient to use the app, but an attacker could intercept your traffic - you'd need to generate your own, properly signed certificate.
+1. Salesforce client ID and client secret: These are specified as environment variables to the server using the envars `sf-client-id` and `sf-client-secret`. Ideally they'd be in a secure vault and retrieved at startup, but envar is a good second-best.
+
+Bits of code to look at:
+* `src/main/java/org/redcabbage/salesforceintro/salesforceauth/LoginController.java`: this is the crux of the auth flow; it does the initial redirect to Salesforce to authenticate, and triggers the subsequent call to get the access code.
+* `src/main/java/org/redcabbage/salesforceintro/salesforceauth/SalesForceApiConnectorImpl.java`: wraps calls to the Salesforce APIs; shows the call to translate the auth code into the access code.
 
 ## salesƒorce (the company) - what do they do?
 
